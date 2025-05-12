@@ -1,0 +1,8 @@
+POST a PEM or DER encoded CSR to this endpoint to validate it and to get
+back the hostname in the CSR. This is a convenience function in the sense
+that you could do this locally, but the validation logic is specific to this
+application. This endpoint will check that the CSR's subject is the correct
+based on the hash of the public key.
+
+The server will remember your CSR for future use with the /cert/ endpoint,
+but that's fine. CSRs aren't secret.

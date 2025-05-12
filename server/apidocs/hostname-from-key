@@ -1,0 +1,7 @@
+POST a PEM encoded ECDSA P-256 private key to this endpoint and you will get
+back the basename (in the format "xxx.xxx.tls.page") that would correspond
+to it. This is not exactly secure in the sense that you are sending me your
+private key, and I don't really need it.
+
+While the private key is not stored on the server, it will be used to
+generate a CSR which will be stored for use with the /cert/ endpoint.

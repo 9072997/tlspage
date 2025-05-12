@@ -1,0 +1,12 @@
+POST a PEM or DER encoded CSR containing a correctly calculated hostname to
+this endpoint to get back PEM encoded certificate complete with it's
+certificate chain. This is the main endpoint for the application, and with a
+sufficiently advanced client, this is the only thing that *needs* to be done
+on the server.
+
+The server will remember your CSR for future use with the /cert/ endpoint,
+but that's fine. CSRs aren't secret.
+
+NOTE: repeated requests to this endpoint with the same public key will not
+result in a new certificate being issued. Rather the same (still valid) cert
+will be returned until it gets close to expiring.

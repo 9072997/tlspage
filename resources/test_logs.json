@@ -1,0 +1,501 @@
+{
+	"is_all_logs": true,
+	"version": "53.41",
+	"log_list_timestamp": "2025-05-11T12:55:05Z",
+	"operators": [
+		{
+			"name": "Google",
+			"email": [
+				"google-ct-logs@googlegroups.com"
+			],
+			"logs": [
+				{
+					"description": "Google 'Testtube' log",
+					"log_id": "sMyD5aX5fWuvfAnMKEkEhyrH6IsTLGNQt8b9JuFsbHc=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEw8i8S7qiGEs9NXv0ZJFh6uuOmR2Q7dPprzk9XNNGkUXjzqx2SDvRfiwKYwBljfWujozHESVPQyydGaHhkaSz/g==",
+					"url": "https://ct.googleapis.com/testtube/",
+					"mmd": 86400,
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Crucible' log",
+					"log_id": "w78Dp+HKiEHGB7rj/0Jw/KXsRbGG675OLPP8d4Yw9fY=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKATl2B3SAbxyzGOfNRB+AytNTGvdF/FFY6HzWb+/HPE4lJ37vx2nEm99KYUy9SoNzF5VyTwCQG5nL/c5Q77yQQ==",
+					"url": "https://ct.googleapis.com/logs/crucible/",
+					"mmd": 86400,
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2018' log",
+					"log_id": "UutLIl7IlpdIUGdfI+Q7wdAh4yFM5S7NX6h8IDzfygM=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEuFqn5cy1nACARlWIUjeJaRDKl0mcf9gvFZXpPhHsyykizXvULF5GZNGfucWIyUccBRfmYJZTTrXqw0mVts7hA==",
+					"url": "https://ct.googleapis.com/logs/solera2018/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2018-01-01T00:00:00Z",
+						"end_exclusive": "2019-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2019' log",
+					"log_id": "C3YOmouaaC+ImFsV6UdQGlZEa7qIMHhcOEKZQ4ZFDAA=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJUwGinXUWVNaBiK2Vl/rdyMkxKaWJHR8dj9yD5AlZEtEbfvAMQQ8o7DQyXVm7TX+eAA9wL2Vtt6DpoMEL0q/rw==",
+					"url": "https://ct.googleapis.com/logs/solera2019/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2019-01-01T00:00:00Z",
+						"end_exclusive": "2020-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2020' log",
+					"log_id": "H8cs5aG3mfQAw1m/+WyjkTVI6GRCIGEJUum6F3T3usc=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEiKfWtuoWCPMEzSKySjMjXpo38WOdZr6Yq0WYa2JQOv1uVMxkqHywf9Gz1kGeRLq/Rz3tVVvXgqb4jQ1UqKVKnw==",
+					"url": "https://ct.googleapis.com/logs/solera2020/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2020-01-01T00:00:00Z",
+						"end_exclusive": "2021-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2021' log",
+					"log_id": "o8mYRegKt84AFXs3Qt8CB90nKytgLs+Y7iwS25xa5+c=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1glwxqXsw2VqlAbHSeWbTthMGNIuACVn8Jj/jrnY2iN2uVUrEEwLj5VUCb+WF2XY44+mfUVYY7R/d8TIZ4olnw==",
+					"url": "https://ct.googleapis.com/logs/solera2021/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2021-01-01T00:00:00Z",
+						"end_exclusive": "2022-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2022' log",
+					"log_id": "aXqvyhprU2+uISBQRt661+Dq6hPSQy5unY+zefK5qvM=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFWj6UQDxzHWmgzQtQQ7REDC0nxnU9mpOmA0lv5trA0t7IRzSkh4DOznPe+nkxmaC8iS1capCtKjyYhUNRrvWqA==",
+					"url": "https://ct.googleapis.com/logs/solera2022/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2022-01-01T00:00:00Z",
+						"end_exclusive": "2023-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2023' log",
+					"log_id": "+X6XuNM+96FZAqU6GeF5kOXcQGoDGCW6rZPpj5ucacs=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEK9Y56IP6DGQy2d9moYGJChZPoktXoYwaG0MBN/4X5MSFmBaYJfNm3mCwzLVefkjh2wz8Q6q2S75hS/OeHGiZUg==",
+					"url": "https://ct.googleapis.com/logs/solera2023/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2023-01-01T00:00:00Z",
+						"end_exclusive": "2024-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2024' log",
+					"log_id": "MCTOfusWiGJyS+pwLv/5ks/kVkNBkapZWyX4AibIABc=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkKRxB5QC4ynmO/IvHmaJn+hbCEYhlakEWOQb+HcHJLz+b7Mas2GU0A1g+g6/QxTKFqu3AYV7nz9CzL0j6TN7Lg==",
+					"url": "https://ct.googleapis.com/logs/eu1/solera2024/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2024-01-01T00:00:00Z",
+						"end_exclusive": "2025-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2025h1' log",
+					"log_id": "P+HLRu1HNXmvAUH5ck2dxENHLXVuhedxnFWCSF3U4eQ=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEMpXEsch8KM/GG5RUjIpkjCx97kY3lZsF77iqzZl3S4UxD4LnquxNmBxzNcAMaSsOXB1SNydrnK7G/pKmyEZMYg==",
+					"url": "https://ct.googleapis.com/logs/eu1/solera2025h1/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2025-01-01T00:00:00Z",
+						"end_exclusive": "2025-07-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2025h2' log",
+					"log_id": "JgI5SIdM9/zQ+2RxpD6EfrsgCubi+iQjbfbRpgZjD7E=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/wLJ3IAUFsraZBi7DNkF9+0aQYgQLypLuKf1NPKPR15HDDvlQ6jh9QFOsvKj6Zu29i9+/+tcIJ4XSgJ3jXIkPw==",
+					"url": "https://ct.googleapis.com/logs/eu1/solera2025h2/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2025-07-01T00:00:00Z",
+						"end_exclusive": "2026-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2026h1' log",
+					"log_id": "yEuQege+qimmFMJFhLej9mJDlGh7Jf5ig4tx7EIq0vk=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEGIEKGwhsBrD0dHERCo7HCeFvQiia/GOTd27XqCh6zDQhrtgaeeHiwGXcc77eyUv9EW65FuR4iLQ5TqSYRl6hpQ==",
+					"url": "https://ct.googleapis.com/logs/eu1/solera2026h1/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2026-01-01T00:00:00Z",
+						"end_exclusive": "2026-07-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Google 'Solera2026h2' log",
+					"log_id": "YukAYASjB5VadUS01YSpYmjKHW5Fha3wkW3+X9wfBNs=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE4kP79ikDxwWHe9xBgN+DMaC5Wc0x9khy7TWGFkvDN0ift3Ens1AsuN20BCJrTN9t8eo86H+wwdUOxz6IQbkg6Q==",
+					"url": "https://ct.googleapis.com/logs/eu1/solera2026h2/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2026-07-01T00:00:00Z",
+						"end_exclusive": "2027-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				}
+			],
+			"tiled_logs": []
+		},
+		{
+			"name": "Cloudflare",
+			"email": [
+				"ct-logs@cloudflare.com",
+				"mihir@cloudflare.com",
+				"dkozlov@cloudflare.com",
+				"leland@cloudflare.com"
+			],
+			"logs": [],
+			"tiled_logs": [
+				{
+					"description": "Cloudflare Research 'cftest2025h1a' log",
+					"log_type": "test",
+					"log_id": "7DSwkhPo35hYEZa4DVlPq6Pm/bG4aOw/kqhHvYd6z/k=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8LxK0sAKYODiZe9gDeak7agggQ0wvBOeEMSi7cLlFzcTlm1AexxsC04r/4rBIhf8liQqyRTrL3u1jpz6NJ4tLg==",
+					"witness_key": "MCowBQYDK2VwAyEAWTVSsOnsIYq+LZ6CUxgI8ONvJvE+YSF27N9BXZ02EP8=",
+					"mmd": 86400,
+					"submission_url": "https://static-ct.cloudflareresearch.com/logs/cftest2025h1a/",
+					"monitoring_url": "https://static-ct-public-cftest2025h1a.cloudflareresearch.com/",
+					"temporal_interval": {
+						"start_inclusive": "2025-01-01T00:00:00Z",
+						"end_exclusive": "2025-07-01T00:00:00Z"
+					}
+				},
+				{
+					"description": "Cloudflare Research 'cftest2025h2a' log",
+					"log_type": "test",
+					"log_id": "2KJiliJSBM2181NJWC5O1mWiRRsPJ6i2iWE2s7n8Bwg=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEYipauBOPEktPb0JVpkRQq6wtRDRIj8GmKYvzM0Lpw1oSh9Uis9khpPCH6xyrDstk019AHuCq19KT5f+/MkY/yA==",
+					"witness_key": "MCowBQYDK2VwAyEA8jhNnqw2LXtyjb0Os+R3eiKfxnsP8tnke5iZZ16nBbU=",
+					"mmd": 86400,
+					"submission_url": "https://static-ct.cloudflareresearch.com/logs/cftest2025h2a/",
+					"monitoring_url": "https://static-ct-public-cftest2025h2a.cloudflareresearch.com/",
+					"temporal_interval": {
+						"start_inclusive": "2025-07-01T00:00:00Z",
+						"end_exclusive": "2026-01-01T00:00:00Z"
+					}
+				}
+			]
+		},
+		{
+			"name": "filippo.io",
+			"logs": [],
+			"tiled_logs": [
+				{
+					"description": "Sunlight 'Rome2024h2' log",
+					"log_id": "/RySG7GQgPWKaB4qwcUH/rlyaR0Z81ZsKnqsfh+9574=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8LC3W9CexoHBs5M2ckscoufU6kJN\nEETzqpkCCwCH2OkILhmSlFh/EL6cg8gTS57ILa+KEfVVd9c0y4WWpLRRpg==",
+					"url": "https://rome2024h2.fly.storage.tigris.dev/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2024-07-01T00:00:00Z",
+						"end_exclusive": "2025-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Sunlight 'Rome2025h1' log",
+					"log_id": "CcqE9Qr4S0I/k8n/aw7Zb50vFLK8N6VTDklIYnKaIrU=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE73Q+k6l4jEssAXpg5xfyxQMYzt/4\nrwPxY1PnOnPQgDYAmwXQSqSFg0dYg6cPLo5FwgJBwsxkIhDX9m5/e8pRXw==",
+					"url": "https://rome2025h1.fly.storage.tigris.dev/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2025-01-01T00:00:00Z",
+						"end_exclusive": "2025-07-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Sunlight 'Rome2025h2' log",
+					"log_id": "/gPlcjs96uJwbyD9J6XweM1hKgw5HI7W9mQBaPN3e1U=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEMMdtuOCFEjeegwdxRzHKem927Lm6\n1wnKVgiyHDvAnZdl2qGzdivV0ZK993x6O8eYFwK0ZAGjFpHXLKj9kUzU2Q==",
+					"url": "https://rome2025h2.fly.storage.tigris.dev/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2025-07-01T00:00:00Z",
+						"end_exclusive": "2026-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				}
+			]
+		},
+		{
+			"name": "Geomys",
+			"logs": [],
+			"tiled_logs": [
+				{
+					"description": "Sunlight 'Navigli2025h2' log",
+					"log_id": "5Pt3SiEkxYZAsYMvUKv63ISjiu1xke62aSI3ksv2KJE=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE4i7AmqGoGHsorn/eyclTMjrAnM0JUUbyGJUxXqq1AjQ4qBC77wXkWt7s/HA8An2vrEBKIGQzqTjV8QIHrmpd4w==",
+					"url": "https://navigli2025h2.sunlight.geomys.org/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2025-07-01T00:00:00Z",
+						"end_exclusive": "2026-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Sunlight 'Navigli2026h1' log",
+					"log_id": "gs3NR5535F0UrWkDiCxBE/yBwhITvsKz2U6dx82Azf4=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEh/xU5f2JBQfU/9jb1aUb06VChY/y+g9VCqiJ+rElEu81HMIj/1jvLzaXl/wYJFSVhtJhl4xeIMBOcltC/t7YTg==",
+					"url": "https://navigli2026h1.sunlight.geomys.org/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2026-01-01T00:00:00Z",
+						"end_exclusive": "2026-07-01T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Sunlight 'Navigli2026h2' log",
+					"log_id": "JKaah8LdWC3VArJRfww4J/MLTqhKJBO1U+b78YzxX+8=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE35uLGxEy/DbYDRg6/078qvcc2D0GyS8Iu8xG1CU8Ab133mXVcYtUJL5XlKP8768znap35cwzLbQUgYsmBIOs3Q==",
+					"url": "https://navigli2026h2.sunlight.geomys.org/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2026-07-01T00:00:00Z",
+						"end_exclusive": "2027-01-01T00:00:00Z"
+					},
+					"log_type": "test"
+				}
+			]
+		},
+		{
+			"name": "Let's Encrypt",
+			"email": [
+				"sre@letsencrypt.org"
+			],
+			"logs": [
+				{
+					"description": "Let's Encrypt 'Twig 2025h1b' log",
+					"log_id": "lZC9hfLPxQZJmKurW7JsLnoXZwKRHBO2i0gF4euUJ+8=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/d6uF9Yw5/3Lo4nJIdWqY0D9H/v/J/WHWqgl8gmTa6AKiBo5CFddHwlU3wj+pgaQm2OhzV2MnXZCOpbLxyk8LA==",
+					"url": "https://twig.ct.letsencrypt.org/2025h1b/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2024-12-17T00:00:00Z",
+						"end_exclusive": "2025-06-17T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Twig 2025h2b' log",
+					"log_id": "wF0gVDhcss+yF5INLw3Hg1JhR7GqT++Xynjh8LuE/O0=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1WZDmBaw9OoQTk8Yf/IvYkXPw6R6A+uBwHf1L4OrI4gsf/g5s9qtFEF6/NhG3R0+nxfha3apbUjdtNWln9yvkg==",
+					"url": "https://twig.ct.letsencrypt.org/2025h2b/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2025-06-17T00:00:00Z",
+						"end_exclusive": "2025-12-16T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Sycamore 2025h1b' log",
+					"log_id": "TgJ3oMtvarf2feceaghbLRgMKXeCS/tMK72dLNQR874=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELnRI9kk9Ahd4T2qNIrqLPvf5lO44NBYwD9lwoV9MqerizPLRDEjzLw2GXa7MonZEXhcMABNHgViY6kb1LeBDJg==",
+					"url": "https://sycamore.ct.letsencrypt.org/2025h1b/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2024-12-18T00:00:00Z",
+						"end_exclusive": "2025-06-18T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Sycamore 2025h2b' log",
+					"log_id": "94/yCGmtl2pDc7SsqLOyAxSOFO3mi+FBU1uhNot7qAY=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEocuurm/JTMcynwKIeUHntdBm8OuLHcK6HgWD5wkE6JCcsPx1i1jAnULV8TSrzdzb8YSIx+VgFp+/YmqGUMHE5w==",
+					"url": "https://sycamore.ct.letsencrypt.org/2025h2b/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2025-06-18T00:00:00Z",
+						"end_exclusive": "2025-12-17T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Willow 2025h1b' log",
+					"log_id": "IX7IijpQPODOtMQx74xNVMHVjB9SuiP0KekrE2jAgWE=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbNmWXyYsF2pohGOAiNELea6UL4/XioI3w6ChE5Udlos0HUqM7KOHIP9qBuWCVs6VAdtDXrvanmxKq52Whh2+2w==",
+					"url": "https://willow.ct.letsencrypt.org/2025h1b/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2024-12-19T00:00:00Z",
+						"end_exclusive": "2025-06-19T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Willow 2025h2c' log",
+					"log_id": "kqECxXwi2rGMzCrnH9TMWcBdJR2hbHPiKBvT8LBImIc=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEaUvzqBm/C9pNUsVI1jqpms5OkW3Kk+Eb3/veW6P3ogOItkqqEvkZfU7zBbsvm1j1Ep003iNUGFOrilPl5TpCRg==",
+					"url": "https://willow.ct.letsencrypt.org/2025h2c/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2025-06-19T00:00:00Z",
+						"end_exclusive": "2025-12-18T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Testflume2019' log",
+					"log_id": "hJ9ff1jSv3tU7L10YRzqRcScmPHWSBvG9p6MF08k888=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAg3+vFOesFW51rKECekioAt9Zo50atRoOJ0qLxF7DIEHsHneXLEpgO1WMreleRy1vEbUJD7TXoH9r8qSDGvyew==",
+					"url": "https://testflume.ct.letsencrypt.org/2019/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2019-01-01T00:00:00Z",
+						"end_exclusive": "2020-01-07T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Sapling 2022h2' log",
+					"log_id": "Iy1BpM2sh87Z+UP0aMKCCVrgnTDWLi+mXdw7kZwuRo8=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6m0gtMM2pcVTxVjkztm/ByNrF32xacdVnbsYwlzwtqN0vOwqcXLtPkfYqH+q93hlJwEBsX1MnRXDdlMHkkmZJg==",
+					"url": "https://sapling.ct.letsencrypt.org/2022h2/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2022-06-15T00:00:00Z",
+						"end_exclusive": "2023-01-15T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Sapling 2023h1' log",
+					"log_id": "wYMkC/GkUMdvuwByadysO+IqSAXU2+BJZsPIq8RHsAw=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE09jAcGbw5CDCK2Kg0kkmmDydfDfZAA8K64BufU37yx3Jcy/ePy1EjAi2wUPVJ0xsaNMCU37mh+fBV3+K/cSG8A==",
+					"url": "https://sapling.ct.letsencrypt.org/2023h1/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2022-12-15T00:00:00Z",
+						"end_exclusive": "2023-07-15T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Sapling 2023h2' log",
+					"log_id": "7audHd2Dc5Wf9SqI5Gu0vMPEzE12imDM/042LX+41mg=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbdCykRsTPRgfjKVQvINRLJk3gy+2qNKOU48bo/sWO0ko75S92C+PBDxsqMEd0YpCYYLogCt2LAK/U4H7UwHsjA==",
+					"url": "https://sapling.ct.letsencrypt.org/2023h2/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2023-06-15T00:00:00Z",
+						"end_exclusive": "2024-01-15T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Sapling 2024h1' log",
+					"log_id": "qmywxcn0xJ2NjqkMORfg1wrZIhC/BX9BUJOCzDUMmEY=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1Yn4OKJQuwEwo1/BeVBh1NYkQBnS8sYmMfQr/VdXOGqPcbwcpw0TtjJBYmn8FA+ZT7hnt7OfF4RTjLNW3bWOkw==",
+					"url": "https://sapling.ct.letsencrypt.org/2024h1",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2023-12-15T00:00:00Z",
+						"end_exclusive": "2024-07-15T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Sapling 2024h2' log",
+					"log_id": "hRuuju4zwbmHP8ScenwnZWY7a4BjAwQK7KbBEaWr6dc=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWipy8ZdRGs2Y5tBb8h8c4UUREnT/YMbm+FEUQBBScf85txhGRHNN/sNN0L/KDiGu/GsrOBCkDruDfHkD42eZXQ==",
+					"url": "https://sapling.ct.letsencrypt.org/2024h2",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2024-06-15T00:00:00Z",
+						"end_exclusive": "2025-01-15T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Sapling 2025h1' log",
+					"log_id": "IeUaRNi551QOp/vgutd3NhVgZoTRWusz5kW06VXziIM=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE0orejUR5RSyoqJ0Hyu2gAwO6d9OPGtKgqQwdBMNGkKY1Bms1vzrHaUD5LDEvjB7Ug/ThaXz9eQH03w3jFii0uw==",
+					"url": "https://sapling.ct.letsencrypt.org/2025h1",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2024-12-15T00:00:00Z",
+						"end_exclusive": "2025-07-15T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Testflume2020' log",
+					"log_id": "xj8iGMN9VqaqBrWW2o5T1NcVbR6brI5E0iAt5k1p2dw=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjdjcoKpeBShHgHvRm3BxD5+l+eHZudv3KmD5SDcLcI01Vj5TDTmxanQKCgpvm9pfnfB6URMQV3hhU1I02jRoRw==",
+					"url": "https://testflume.ct.letsencrypt.org/2020/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2020-01-01T00:00:00Z",
+						"end_exclusive": "2021-01-07T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Testflume2021' log",
+					"log_id": "A+3x2pd2tvOMNB457Z1wenVwNpz5hE8yf+nhQTg2G2A=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEdCLoJNt1QcNa7sNDp7g7oTJ+o/UIYEM6N/IZWT+dhdqtJZC+AODJ/4exdOwG04B4K6WrN1VB2ELKQIc/wU1lCw==",
+					"url": "https://testflume.ct.letsencrypt.org/2021/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2021-01-01T00:00:00Z",
+						"end_exclusive": "2022-01-07T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Testflume2022' log",
+					"log_id": "Iyfv2jUlENvAGe9JGuP/HMWkebzjeHg2DuMYz/tk+Mg=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjy/rXcABuf0yhrm1+XgjDnh4XPD7vfMoyJOyT+KA+c2zuXVR98yQmp/Bl5ZFdGFwJuFcVrCw7IDo0EGKs7UCww==",
+					"url": "https://testflume.ct.letsencrypt.org/2022/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2022-01-01T00:00:00Z",
+						"end_exclusive": "2023-01-07T00:00:00Z"
+					},
+					"log_type": "test"
+				},
+				{
+					"description": "Let's Encrypt 'Testflume2023' log",
+					"log_id": "VTS3q1pqw6fL66ZUh7Ki1xtI9lD6F8UZfJegyyB288Y=",
+					"key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8aLpnumqeISmQEB3hKPgtPJQG3jP2IftfaUQ4WPUihNBwUOEk1R9BMg5RGQwebWSsRlGIRiCvtE97Q45Vh3mqA==",
+					"url": "https://testflume.ct.letsencrypt.org/2023/",
+					"mmd": 86400,
+					"temporal_interval": {
+						"start_inclusive": "2023-01-01T00:00:00Z",
+						"end_exclusive": "2024-01-07T00:00:00Z"
+					},
+					"log_type": "test"
+				}
+			],
+			"tiled_logs": []
+		}
+	]
+}

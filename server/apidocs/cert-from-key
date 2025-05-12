@@ -1,0 +1,11 @@
+POST a PEM encoded ECDSA P-256 private key to get back a PEM encoded
+certificate complete with it's certificate chain. This is a less-secure than
+the /cert-from-csr endpoint because with this endpoint you are sending me
+your private key, which I don't actually need.
+
+While the private key is not stored on the server, it will be used to
+generate a CSR which will be stored for use with the /cert/ endpoint.
+
+NOTE: repeated requests to this endpoint with the same key will not result
+in a new certificate being issued. Rather the same (still valid) cert will
+be returned until it gets close to expiring.

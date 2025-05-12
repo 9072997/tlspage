@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>tls.page</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			line-height: 1.6;
+			margin: 0;
+			padding: 0;
+			background-color: #f4f4f9;
+			color: #333;
+		}
+
+		h2 {
+			color: #444;
+			border-bottom: 2px solid #ddd;
+			padding-bottom: 5px;
+			margin-top: 0;
+		}
+
+		pre {
+			background: #f9f9f9;
+			border: 1px solid #ddd;
+			padding: 10px;
+			overflow-x: auto;
+			border-radius: 5px;
+		}
+
+		button {
+			background-color: #007bff;
+			color: white;
+			border: none;
+			padding: 10px 15px;
+			border-radius: 5px;
+			cursor: pointer;
+			font-size: 1rem;
+		}
+
+		button:disabled {
+			background-color: #ccc;
+			cursor: not-allowed;
+		}
+
+		button:hover:not(:disabled) {
+			background-color: #0056b3;
+		}
+
+		div {
+			margin: 20px;
+			padding: 20px;
+			background: white;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		}
+
+		#hostname-value span {
+			display: inline-block;
+			margin: 5px 0;
+			font-family: monospace;
+		}
+
+		strong {
+			color: #007bff;
+		}
+	</style>
+</head>
+
+<body>
+	<script src="wasm_exec.js"></script>
+	<script>
+		function HostnameHTML(h) {
+			return `<h2>Hostname</h2>` +
+				`<span>*.${h}</span><br />` +
+				`<h3>IPv4 Examples:</h3>` +
+				`<span><strong>127-0-0-1</strong>.${h}</span><br />` +
+				`<span><strong>203-0-113-1</strong>.${h}</span><br />` +
+				`<h3>IPv6 Examples:</h3>` +
+				`<span><strong>0--1</strong>.${h}</span><br />` +
+				`<span><strong>2001-db8-0--1</strong>.${h}</span><br />`;
+		}
+		
+		function GoReady() {
+			// This function is called when the Go runtime is ready.
+			console.log('Go runtime is ready');
+
+			const privateKeyE = document.getElementById('private-key-value');
+			const csrE = document.getElementById('csr-value');
+			const certE = document.getElementById('cert-value');
+			const hostnameE = document.getElementById('hostname');
+			const certButton = document.getElementById('cert-button');
+			const privateKeyButton = document.getElementById('private-key-button');
+			
+			// generate the CSR
+			const pk = GenerateKey();
+			const h = Hostname(pk, 'tls.page');
+			const csr = GenerateCSR(pk, h);
+			let cert = '';
+			privateKeyE.innerText = pk;
+			hostnameE.innerHTML = HostnameHTML(h);
+			privateKeyButton.disabled = false;
+			privateKeyButton.onclick = async function () {
+				const blob = new Blob([pk], { type: 'text/plain' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'private-key.pem';
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+				
+				if (!cert) {
+					cert = true;
+					certE.innerText = 'Loading... (ETA 20 seconds)';
+					try {
+						cert = await GetCertificate(csr, 'tls.page');
+					} catch (e) {
+						certE.innerText = 'Error: ' + e;
+						return;
+					}
+					certE.innerText = cert;
+					certButton.disabled = false;
+					certButton.onclick = function () {
+						const blob = new Blob([cert], { type: 'text/plain' });
+						const url = URL.createObjectURL(blob);
+						const a = document.createElement('a');
+						a.href = url;
+						a.download = 'cert.pem';
+						document.body.appendChild(a);
+						a.click();
+						document.body.removeChild(a);
+						URL.revokeObjectURL(url);
+					};
+				}
+			};
+		}
+
+		(async function () {
+			const go = new Go();
+			const result = await WebAssembly.instantiateStreaming(
+				fetch("tlspagelib.wasm"),
+				go.importObject,
+			);
+
+			// The execution model is kind-of like the go program is running
+			// in a separate thread, and we can message back and forth into
+			// it. Go is allowed to keep state and do stuff in the background,
+			// so we don't want to `await` the result of this call.
+			go.run(result.instance);
+		})();
+	</script>
+
+	<div id="private-key">
+		<h2>Private Key</h2>
+		<pre id="private-key-value">Loading...</pre>
+		<button id="private-key-button" disabled autocomplete="off">Save</button>
+	</div>
+	<div id="hostname">
+		<h2>Hostname</h2>
+		Loading...
+	</div>
+	<div id="cert-chain">
+		<h2>Certificate Chain</h2>
+		<pre id="cert-value">Please save the private key first</pre>
+		<button id="cert-button" disabled autocomplete="off">Save</button>
+	</div>
+</body>
+
+</html>

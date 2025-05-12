@@ -1,0 +1,3 @@
+POST a PEM encoded certificate to this endpoint to get the hostname of that
+certificate. This is just a convenience function. You could just parse the
+certificate yourself using a standard x509 library.
