@@ -28,6 +28,10 @@ func main() {
 	if jsonFilename == "" {
 		notify("JSON_FILENAME environment variable is not set")
 	}
+	if jsonFilename == "" {
+		HandleOther()
+		return
+	}
 	watchItem := os.Getenv("WATCH_ITEM") // ex: ".tls.page"
 	if watchItem == "" {
 		notify("WATCH_ITEM environment variable is not set")
