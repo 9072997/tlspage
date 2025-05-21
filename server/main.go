@@ -13,16 +13,28 @@ func main() {
 	fmt.Printf("State Directory: %s\n", stateDir)
 	fmt.Printf("Configuration Directory: %s\n", confDir)
 	acmeAccountFile := filepath.Join(stateDir, "acme-account")
-	certsDBFile := filepath.Join(stateDir, "certs.sqlite3")
 	zonefile := filepath.Join(confDir, "zonefile")
 	dnsKeyFile := filepath.Join(stateDir, "dns-key")
 	homePageCertDir := filepath.Join(stateDir, "certs")
 	wwwDir := filepath.Join(confDir, "www")
+	dbDir := filepath.Join(stateDir, "db")
+	dqliteCertFile := filepath.Join(confDir, "dqlite.cert")
+	dqliteKeyFile := filepath.Join(confDir, "dqlite.key")
+	peersFile := filepath.Join(confDir, "peers")
+
+	db, err := NewDqlite(dbDir, dqliteCertFile, dqliteKeyFile, peersFile)
+	if err != nil {
+		panic(err)
+	}
+	if len(os.Getenv("DB_ONLY")) > 0 {
+		fmt.Println("DB_ONLY is set")
+		select {} // Block forever
+	}
 
 	a, err := NewACME(
 		acmeAccountFile,
-		certsDBFile,
 		"https://acme-v02.api.letsencrypt.org/directory",
+		db,
 	)
 	if err != nil {
 		panic(err)
