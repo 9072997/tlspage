@@ -173,6 +173,7 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 		app.WithAddress(selfAddr),
 		app.WithCluster(peers),
 		app.WithTLS(app.SimpleTLSConfig(cert, pool)),
+		app.WithDiskMode(true),
 		app.WithRolesAdjustmentHook(
 			newRolesAdjustmentHook(a),
 		),
