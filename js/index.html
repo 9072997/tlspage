@@ -92,6 +92,7 @@
 			const hostnameE = document.getElementById('hostname');
 			const certButton = document.getElementById('cert-button');
 			const privateKeyButton = document.getElementById('private-key-button');
+			const certLink = document.getElementById('cert-link');
 			
 			// generate the CSR
 			const pk = GenerateKey();
@@ -134,6 +135,8 @@
 						document.body.removeChild(a);
 						URL.revokeObjectURL(url);
 					};
+					certLink.innerText = 'This link always points to a valid certificate for this private key';
+					certLink.href = `https://tls.page/cert/${h}`;
 				}
 			};
 		}
@@ -164,6 +167,7 @@
 	</div>
 	<div id="cert-chain">
 		<h2>Certificate Chain</h2>
+		<a id="cert-link"></a>
 		<pre id="cert-value">Please save the private key first</pre>
 		<button id="cert-button" disabled autocomplete="off">Save</button>
 	</div>
