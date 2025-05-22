@@ -5,20 +5,24 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/rand"
+	crand "crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"database/sql"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"log"
 	"math/big"
+	mrand "math/rand"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/canonical/go-dqlite/v3/app"
+	"github.com/canonical/go-dqlite/v3/client"
 )
 
 func myIPv6() (net.IP, error) {
@@ -49,6 +53,15 @@ func myIPv6() (net.IP, error) {
 }
 
 func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
+	// get our own IPv6 address
+	selfV6, err := myIPv6()
+	if err != nil {
+		err = fmt.Errorf("failed to get our IPv6 address: %v", err)
+		return nil, err
+	}
+	selfAddr := net.JoinHostPort(selfV6.String(), "9000")
+	log.Printf("Using dqlite address %s\n", selfAddr)
+
 	// read the peers file into []string
 	peersRaw, err := os.ReadFile(peersFile)
 	if err != nil {
@@ -59,7 +72,19 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 	for _, peer := range bytes.Split(peersRaw, []byte{'\n'}) {
 		trimmed := bytes.TrimSpace(peer)
 		if len(trimmed) > 0 {
-			peers = append(peers, string(trimmed))
+			// skip lines starting with #
+			if trimmed[0] == '#' {
+				continue
+			}
+
+			// skip if this is our own address
+			parsed := net.ParseIP(string(trimmed))
+			if parsed.Equal(selfV6) {
+				continue
+			}
+
+			hp := net.JoinHostPort(string(trimmed), "9000")
+			peers = append(peers, hp)
 		}
 	}
 
@@ -70,24 +95,63 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	// get our own IPv6 address
-	selfV6, err := myIPv6()
-	if err != nil {
-		err = fmt.Errorf("failed to get our IPv6 address: %v", err)
-		return nil, err
-	}
-	selfAddr := net.JoinHostPort(selfV6.String(), "9000")
-	log.Printf("Using dqlite address %s\n", selfAddr)
-
 	cert, pool, err := dqliteKeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, err
 	}
-	app, err := app.New(
+	var a *app.App
+	a, err = app.New(
 		dataDir,
 		app.WithAddress(selfAddr),
 		app.WithCluster(peers),
 		app.WithTLS(app.SimpleTLSConfig(cert, pool)),
+		app.WithRolesAdjustmentHook(
+			func(leader client.NodeInfo, cluster []client.NodeInfo) error {
+				// a healthy cluster should have at least 3 nodes
+				if len(cluster) <= 3 {
+					return nil
+				}
+
+				// random delay to avoid all nodes doing
+				// the same thing at the same time
+				time.Sleep(time.Duration(mrand.Intn(1000)) * time.Millisecond)
+
+				// loop over each non-voting node and do a liveness check
+				for _, node := range cluster {
+					if node.ID == leader.ID {
+						continue
+					}
+					if node.Role == client.Voter {
+						continue
+					}
+
+					conn, err := net.DialTimeout("tcp", node.Address, time.Second)
+					if err != nil {
+						log.Printf("Node %d is dead: %v", node.ID, err)
+						// remove the node from the cluster
+						ctx, cancel := context.WithTimeout(
+							context.Background(),
+							DqliteTimeout,
+						)
+						defer cancel()
+						leader, err := a.FindLeader(ctx)
+						if err != nil {
+							log.Println("Error getting dqlite client:", err)
+							return err
+						}
+						defer leader.Close()
+						err = leader.Remove(ctx, node.ID)
+						if err != nil {
+							log.Printf("Error removing node %d: %v", node.ID, err)
+							return err
+						}
+						continue
+					}
+					conn.Close()
+				}
+				return nil
+			},
+		),
 	)
 	if err != nil {
 		return nil, err
@@ -100,11 +164,11 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 			context.Background(),
 			ShutdownTimeout,
 		)
-		err := app.Handover(ctx)
+		err := a.Handover(ctx)
 		if err != nil {
 			log.Printf("Error doing dqlite handover: %v", err)
 		}
-		err = app.Close()
+		err = a.Close()
 		if err != nil {
 			log.Printf("Error closing dqlite: %v", err)
 		}
@@ -112,14 +176,57 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 
 	log.Println("Starting dqlite")
 	ctx, cancel := context.WithTimeout(context.Background(), DqliteTimeout)
-	err = app.Ready(ctx)
+	err = a.Ready(ctx)
 	cancel()
 	if err != nil {
 		return nil, err
 	}
 	log.Println("dqlite is ready")
 
-	db, err := app.Open(context.Background(), PackageNameVersion)
+	// register a status endpoint
+	ctx, cancel = context.WithTimeout(context.Background(), DqliteTimeout)
+	client, err := a.Client(ctx)
+	cancel()
+	if err != nil {
+		return nil, err
+	}
+	srv := &http.Server{
+		Addr: ":9001",
+		Handler: http.HandlerFunc(
+			func(resp http.ResponseWriter, req *http.Request) {
+				nodes, err := client.Cluster(req.Context())
+				if err != nil {
+					http.Error(
+						resp,
+						err.Error(),
+						http.StatusInternalServerError,
+					)
+					return
+				}
+				resp.Header().Set("Content-Type", "application/json")
+				enc := json.NewEncoder(resp)
+				enc.SetIndent("", "\t")
+				err = enc.Encode(nodes)
+				if err != nil {
+					http.Error(
+						resp,
+						err.Error(),
+						http.StatusInternalServerError,
+					)
+					return
+				}
+			},
+		),
+	}
+	go func() {
+		log.Println("Starting dqlite status server")
+		err := srv.ListenAndServe()
+		if err != nil {
+			log.Printf("Error starting dqlite status server: %v", err)
+		}
+	}()
+
+	db, err := a.Open(context.Background(), PackageNameVersion)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +243,7 @@ func generateSelfSignedCert(certFile, keyFile string) error {
 	}
 
 	// Generate a private key
-	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
 	if err != nil {
 		return err
 	}
@@ -159,7 +266,7 @@ func generateSelfSignedCert(certFile, keyFile string) error {
 
 	// Self-sign the certificate
 	certBytes, err := x509.CreateCertificate(
-		rand.Reader,
+		crand.Reader,
 		&template,
 		&template,
 		&privateKey.PublicKey,
