@@ -52,22 +52,67 @@ func myIPv6() (net.IP, error) {
 	return nil, nil
 }
 
-func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
-	// get our own IPv6 address
+func newRolesAdjustmentHook(a *app.App) func(client.NodeInfo, []client.NodeInfo) error {
+	return func(leader client.NodeInfo, cluster []client.NodeInfo) error {
+		// a healthy cluster should have at least 3 nodes
+		if len(cluster) <= 3 {
+			return nil
+		}
+
+		// random delay to avoid all nodes doing
+		// the same thing at the same time
+		time.Sleep(time.Duration(mrand.Intn(1000)) * time.Millisecond)
+
+		// loop over each non-voting node and do a liveness check
+		for _, node := range cluster {
+			if node.ID == leader.ID {
+				continue
+			}
+			if node.Role == client.Voter {
+				continue
+			}
+
+			conn, err := net.DialTimeout("tcp", node.Address, time.Second)
+			if err != nil {
+				log.Printf("Node %d is dead: %v", node.ID, err)
+				// remove the node from the cluster
+				ctx, cancel := context.WithTimeout(
+					context.Background(),
+					DqliteTimeout,
+				)
+				defer cancel()
+				leader, err := a.FindLeader(ctx)
+				if err != nil {
+					log.Println("Error getting dqlite client:", err)
+					return err
+				}
+				defer leader.Close()
+				err = leader.Remove(ctx, node.ID)
+				if err != nil {
+					log.Printf("Error removing node %d: %v", node.ID, err)
+					return err
+				}
+				continue
+			}
+			conn.Close()
+		}
+		return nil
+	}
+}
+
+func readPeersFile(peersFile string) ([]string, error) {
 	selfV6, err := myIPv6()
 	if err != nil {
 		err = fmt.Errorf("failed to get our IPv6 address: %v", err)
 		return nil, err
 	}
-	selfAddr := net.JoinHostPort(selfV6.String(), "9000")
-	log.Printf("Using dqlite address %s\n", selfAddr)
 
-	// read the peers file into []string
 	peersRaw, err := os.ReadFile(peersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read peers file: %v", err)
 		return nil, err
 	}
+
 	var peers []string
 	for _, peer := range bytes.Split(peersRaw, []byte{'\n'}) {
 		trimmed := bytes.TrimSpace(peer)
@@ -88,6 +133,26 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 		}
 	}
 
+	return peers, nil
+}
+
+func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
+	// get our own IPv6 address
+	selfV6, err := myIPv6()
+	if err != nil {
+		err = fmt.Errorf("failed to get our IPv6 address: %v", err)
+		return nil, err
+	}
+	selfAddr := net.JoinHostPort(selfV6.String(), "9000")
+	log.Printf("Using dqlite address %s\n", selfAddr)
+
+	// read the peers file into []string
+	peers, err := readPeersFile(peersFile)
+	if err != nil {
+		err = fmt.Errorf("failed to read peers file: %v", err)
+		return nil, err
+	}
+
 	// create the data directory if it doesn't exist
 	err = os.MkdirAll(dataDir, 0755)
 	if err != nil {
@@ -106,51 +171,7 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 		app.WithCluster(peers),
 		app.WithTLS(app.SimpleTLSConfig(cert, pool)),
 		app.WithRolesAdjustmentHook(
-			func(leader client.NodeInfo, cluster []client.NodeInfo) error {
-				// a healthy cluster should have at least 3 nodes
-				if len(cluster) <= 3 {
-					return nil
-				}
-
-				// random delay to avoid all nodes doing
-				// the same thing at the same time
-				time.Sleep(time.Duration(mrand.Intn(1000)) * time.Millisecond)
-
-				// loop over each non-voting node and do a liveness check
-				for _, node := range cluster {
-					if node.ID == leader.ID {
-						continue
-					}
-					if node.Role == client.Voter {
-						continue
-					}
-
-					conn, err := net.DialTimeout("tcp", node.Address, time.Second)
-					if err != nil {
-						log.Printf("Node %d is dead: %v", node.ID, err)
-						// remove the node from the cluster
-						ctx, cancel := context.WithTimeout(
-							context.Background(),
-							DqliteTimeout,
-						)
-						defer cancel()
-						leader, err := a.FindLeader(ctx)
-						if err != nil {
-							log.Println("Error getting dqlite client:", err)
-							return err
-						}
-						defer leader.Close()
-						err = leader.Remove(ctx, node.ID)
-						if err != nil {
-							log.Printf("Error removing node %d: %v", node.ID, err)
-							return err
-						}
-						continue
-					}
-					conn.Close()
-				}
-				return nil
-			},
+			newRolesAdjustmentHook(a),
 		),
 	)
 	if err != nil {
@@ -184,14 +205,28 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 	log.Println("dqlite is ready")
 
 	// register a status endpoint
-	ctx, cancel = context.WithTimeout(context.Background(), DqliteTimeout)
-	client, err := a.Client(ctx)
-	cancel()
+	err = startStatusServer(a, "localhost:9001")
 	if err != nil {
 		return nil, err
 	}
+
+	db, err := a.Open(context.Background(), PackageNameVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func startStatusServer(a *app.App, addr string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), DqliteTimeout)
+	client, err := a.Client(ctx)
+	cancel()
+	if err != nil {
+		return err
+	}
 	srv := &http.Server{
-		Addr: ":9001",
+		Addr: addr,
 		Handler: http.HandlerFunc(
 			func(resp http.ResponseWriter, req *http.Request) {
 				nodes, err := client.Cluster(req.Context())
@@ -218,20 +253,15 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 			},
 		),
 	}
+
 	go func() {
-		log.Println("Starting dqlite status server")
 		err := srv.ListenAndServe()
 		if err != nil {
 			log.Printf("Error starting dqlite status server: %v", err)
 		}
 	}()
 
-	db, err := a.Open(context.Background(), PackageNameVersion)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
+	return nil
 }
 
 func generateSelfSignedCert(certFile, keyFile string) error {
