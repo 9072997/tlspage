@@ -26,9 +26,6 @@ type CertSpotterJSON struct {
 func main() {
 	jsonFilename := os.Getenv("JSON_FILENAME")
 	if jsonFilename == "" {
-		notify("JSON_FILENAME environment variable is not set")
-	}
-	if jsonFilename == "" {
 		HandleOther()
 		return
 	}
