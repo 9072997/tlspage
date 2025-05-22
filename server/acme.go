@@ -163,10 +163,9 @@ func (a *ACME) RequestCert(ctx context.Context, baseName string, csrData []byte,
 		}
 
 		// Add the TXT record to the DNS backend
-		backend.ValidationRecords.Set(
+		backend.SetValidationRecord(
 			"_acme-challenge."+baseName+".",
 			key,
-			0,
 		)
 
 		// Wait for DNS propagation

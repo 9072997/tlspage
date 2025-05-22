@@ -3,31 +3,30 @@ package main
 import (
 	"bytes"
 	"crypto"
+	"database/sql"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/9072997/tlspage/dnspriv"
 	"github.com/9072997/tlspage/madns"
-	"github.com/jellydator/ttlcache/v3"
 	"github.com/miekg/dns"
 )
 
 type DNSBackend struct {
-	Origin            string
-	StaticRecords     map[string][]dns.RR
-	ValidationRecords *ttlcache.Cache[string, string]
+	Origin        string
+	StaticRecords map[string][]dns.RR
 
+	db              *sql.DB
 	wildcardDNSName regexp.Regexp
 }
 
 // This populates ZoneData, which is not thread-safe
 // The intent is that it is initialized once at startup and never modified
-func NewDNSBackend(origin, zoneFile string) DNSBackend {
+func NewDNSBackend(origin, zoneFile string, db *sql.DB) (DNSBackend, error) {
 	// TODO: better logic for finding/live-reloading zone file
 	data, err := os.ReadFile(zoneFile)
 	if err != nil {
@@ -61,24 +60,69 @@ func NewDNSBackend(origin, zoneFile string) DNSBackend {
 	}
 	log.Printf("Loaded %d records from zone file", rCount)
 
-	validationRecords := ttlcache.New(
-		ttlcache.WithTTL[string, string](5 * time.Minute),
-	)
-	// cleans up expired records
-	go validationRecords.Start()
-
 	// compile the regex for wildcard DNS names
 	escapedOrigin := regexp.QuoteMeta(origin)
 	wildcardDNSName := regexp.MustCompile(
 		`^[0-9a-f-]{3,45}\.[0-9a-f]{32}\.[0-9a-f]{32}\.` + escapedOrigin + `\.$`,
 	)
 
-	return DNSBackend{
-		Origin:            origin,
-		StaticRecords:     staticRecords,
-		ValidationRecords: validationRecords,
-		wildcardDNSName:   *wildcardDNSName,
+	// create validation records table if it does not exist
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS validation_records (
+			qname TEXT PRIMARY KEY,
+			value TEXT NOT NULL,
+			created INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+		);
+	`)
+	if err != nil {
+		err = fmt.Errorf("failed to create validation records table: %v", err)
+		return DNSBackend{}, err
 	}
+
+	return DNSBackend{
+		Origin:          origin,
+		StaticRecords:   staticRecords,
+		db:              db,
+		wildcardDNSName: *wildcardDNSName,
+	}, nil
+}
+
+func (b DNSBackend) SetValidationRecord(qname, value string) error {
+	// set the validation record in the database
+	// at the same time, clean up old records
+	_, err := b.db.Exec(
+		`
+			INSERT OR REPLACE INTO validation_records (qname, value)
+			VALUES (?, ?);
+			DELETE FROM validation_records
+			WHERE created < (strftime('%s', 'now') - 5 * 60);
+		`,
+		qname,
+		value,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to set validation record: %v", err)
+	}
+	return nil
+}
+
+func (b DNSBackend) GetValidationRecord(qname string) (string, error) {
+	// get the validation record from the database
+	var value string
+	err := b.db.QueryRow(
+		`
+			SELECT value FROM validation_records
+			WHERE qname = ?
+		`,
+		qname,
+	).Scan(&value)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil // No entry found
+		}
+		return "", fmt.Errorf("failed to get validation record: %v", err)
+	}
+	return value, nil
 }
 
 func (b DNSBackend) Lookup(qname, streamIsolationID string) (rr []dns.RR, err error) {
@@ -86,8 +130,11 @@ func (b DNSBackend) Lookup(qname, streamIsolationID string) (rr []dns.RR, err er
 
 	// handle ACME challenge records
 	if strings.HasPrefix(qname, "_acme-challenge.") {
-		vRecord := b.ValidationRecords.Get(qname)
-		if vRecord != nil {
+		vRecord, err := b.GetValidationRecord(qname)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get validation record: %v", err)
+		}
+		if vRecord != "" {
 			rr = append(rr, &dns.TXT{
 				Hdr: dns.RR_Header{
 					Name:   qname,
@@ -95,10 +142,10 @@ func (b DNSBackend) Lookup(qname, streamIsolationID string) (rr []dns.RR, err er
 					Class:  dns.ClassINET,
 					Ttl:    0,
 				},
-				Txt: []string{vRecord.Value()},
+				Txt: []string{vRecord},
 			})
 		}
-		return
+		return rr, nil
 	}
 
 	// handle ipv4 and ipv6 records

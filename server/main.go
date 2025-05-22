@@ -40,7 +40,10 @@ func main() {
 		panic(err)
 	}
 
-	zone := NewDNSBackend("tls.page", zonefile)
+	zone, err := NewDNSBackend("tls.page", zonefile, db)
+	if err != nil {
+		panic(err)
+	}
 	zone.SetCAA("letsencrypt.org", a)
 	zone.GoServeDNS(dnsKeyFile)
 
