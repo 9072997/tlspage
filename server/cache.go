@@ -9,16 +9,14 @@ import (
 	"time"
 
 	"github.com/9072997/tlspage"
-	_ "github.com/glebarez/go-sqlite"
 )
 
 type CertCache struct {
-	file string
-	db   *sql.DB
+	db *sql.DB
 }
 
-func NewCertCache(file string) (*CertCache, error) {
-	c := &CertCache{file: file}
+func NewCertCache(db *sql.DB) (*CertCache, error) {
+	c := &CertCache{db}
 	if err := c.setupDB(); err != nil {
 		return nil, err
 	}
@@ -26,16 +24,8 @@ func NewCertCache(file string) (*CertCache, error) {
 }
 
 func (c *CertCache) setupDB() error {
-	// Open the database file
-	db, err := sql.Open("sqlite", c.file)
-	if err != nil {
-		return err
-	}
-	db.SetMaxOpenConns(1)
-	c.db = db
-
 	// Create the table if it doesn't exist
-	_, err = db.Exec(`
+	_, err := c.db.Exec(`
 		CREATE TABLE IF NOT EXISTS certs (
 			subject TEXT PRIMARY KEY,
 			csr BLOB NOT NULL,
@@ -45,13 +35,6 @@ func (c *CertCache) setupDB() error {
 	`)
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-func (c *CertCache) Close() error {
-	if c.db != nil {
-		return c.db.Close()
 	}
 	return nil
 }

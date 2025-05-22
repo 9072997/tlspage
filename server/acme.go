@@ -6,6 +6,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"database/sql"
 	"encoding/pem"
 	"fmt"
 	"os"
@@ -23,7 +24,7 @@ type ACME struct {
 }
 
 // NewACME creates a new ACME instance, registering or loading an account from the given file.
-func NewACME(accountFile, cacheFile, directoryURL string) (ACME, error) {
+func NewACME(accountFile, directoryURL string, cacheDB *sql.DB) (ACME, error) {
 	client := &acme.Client{
 		DirectoryURL: directoryURL,
 	}
@@ -98,7 +99,7 @@ func NewACME(accountFile, cacheFile, directoryURL string) (ACME, error) {
 		}
 	}
 
-	cache, err := NewCertCache(cacheFile)
+	cache, err := NewCertCache(cacheDB)
 	if err != nil {
 		return ACME{}, fmt.Errorf("failed to create certificate cache: %v", err)
 	}
@@ -109,13 +110,6 @@ func NewACME(accountFile, cacheFile, directoryURL string) (ACME, error) {
 		cache:   cache,
 		MinLife: 60 * 24 * time.Hour,
 	}, nil
-}
-
-func (a *ACME) Close() error {
-	if a.cache != nil {
-		return a.cache.Close()
-	}
-	return nil
 }
 
 // RequestCert requests a certificate using the provided CSR, DNSBackend, and context.
@@ -169,10 +163,9 @@ func (a *ACME) RequestCert(ctx context.Context, baseName string, csrData []byte,
 		}
 
 		// Add the TXT record to the DNS backend
-		backend.ValidationRecords.Set(
+		backend.SetValidationRecord(
 			"_acme-challenge."+baseName+".",
 			key,
-			0,
 		)
 
 		// Wait for DNS propagation

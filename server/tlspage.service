@@ -4,6 +4,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
+#Environment="DB_ONLY=1"
 DynamicUser=yes
 User=tlspage
 Group=tlspage
