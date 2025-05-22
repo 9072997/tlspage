@@ -1,6 +1,7 @@
 package main
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
 	"crypto/ecdsa"
@@ -24,6 +25,8 @@ import (
 	"github.com/canonical/go-dqlite/v3/app"
 	"github.com/canonical/go-dqlite/v3/client"
 )
+
+const DBName = "tlspage.sqlite3"
 
 func myIPv6() (net.IP, error) {
 	ifaces, err := net.Interfaces()
@@ -210,7 +213,7 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	db, err := a.Open(context.Background(), PackageNameVersion)
+	db, err := a.Open(context.Background(), DBName)
 	if err != nil {
 		return nil, err
 	}
@@ -218,40 +221,86 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 	return db, nil
 }
 
+type nodeStatusHandlers struct {
+	*client.Client
+}
+
+func (c nodeStatusHandlers) listNodesHandler(resp http.ResponseWriter, req *http.Request) {
+	nodes, err := c.Cluster(req.Context())
+	if err != nil {
+		http.Error(
+			resp,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+	resp.Header().Set("Content-Type", "application/json")
+	enc := json.NewEncoder(resp)
+	enc.SetIndent("", "\t")
+	err = enc.Encode(nodes)
+	if err != nil {
+		http.Error(
+			resp,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+}
+
+func (c nodeStatusHandlers) dumpHandler(resp http.ResponseWriter, req *http.Request) {
+	files, err := c.Dump(req.Context(), DBName)
+	if err != nil {
+		http.Error(
+			resp,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// compress to zip
+	zipWriter := zip.NewWriter(resp)
+	defer zipWriter.Close()
+	for _, file := range files {
+		f, err := zipWriter.Create(file.Name)
+		if err != nil {
+			http.Error(
+				resp,
+				err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		_, err = f.Write(file.Data)
+		if err != nil {
+			http.Error(
+				resp,
+				err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+	}
+	resp.Header().Set("Content-Type", "application/zip")
+}
+
 func startStatusServer(a *app.App, addr string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), DqliteTimeout)
-	client, err := a.Client(ctx)
+	c, err := a.Client(ctx)
 	cancel()
 	if err != nil {
 		return err
 	}
+
+	handlers := nodeStatusHandlers{c}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/nodes", handlers.listNodesHandler)
+	mux.HandleFunc("/dump", handlers.dumpHandler)
 	srv := &http.Server{
-		Addr: addr,
-		Handler: http.HandlerFunc(
-			func(resp http.ResponseWriter, req *http.Request) {
-				nodes, err := client.Cluster(req.Context())
-				if err != nil {
-					http.Error(
-						resp,
-						err.Error(),
-						http.StatusInternalServerError,
-					)
-					return
-				}
-				resp.Header().Set("Content-Type", "application/json")
-				enc := json.NewEncoder(resp)
-				enc.SetIndent("", "\t")
-				err = enc.Encode(nodes)
-				if err != nil {
-					http.Error(
-						resp,
-						err.Error(),
-						http.StatusInternalServerError,
-					)
-					return
-				}
-			},
-		),
+		Addr:    addr,
+		Handler: mux,
 	}
 
 	go func() {
