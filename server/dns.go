@@ -183,12 +183,32 @@ func (b DNSBackend) Lookup(qname, streamIsolationID string) (rr []dns.RR, err er
 		}
 	}
 
-	// handle static records (and NXDOMAIN)
-	return b.StaticRecords[qname], nil
+	// handle static records
+	rr = b.StaticRecords[qname]
+
+	// handle wildcard records
+	if len(rr) == 0 {
+		parts := strings.Split(qname, ".")
+		for i := 1; i < len(parts); i++ {
+			rest := strings.Join(parts[i:], ".")
+			wcQname := "*." + rest
+			matches := b.StaticRecords[wcQname]
+			if len(matches) > 0 {
+				for _, r := range matches {
+					rCopy := dns.Copy(r)
+					rCopy.Header().Name = qname
+					rr = append(rr, rCopy)
+				}
+				break
+			}
+		}
+	}
+
+	return rr, nil
 }
 
 func (b DNSBackend) SetCAA(caDomain string, a ACME) {
-	// set the CAA record for the given domain
+	// set the CAA record for the root domain
 	rr := &dns.CAA{
 		Hdr: dns.RR_Header{
 			Name:   b.Origin + ".",
@@ -196,16 +216,44 @@ func (b DNSBackend) SetCAA(caDomain string, a ACME) {
 			Class:  dns.ClassINET,
 			Ttl:    5 * 60, // 5 minutes
 		},
-		Flag: 128,
-		Tag:  "issue",
-		Value: fmt.Sprintf(
-			"%s;accounturi=%s",
-			caDomain,
-			a.account.URI,
-		),
+		Flag:  128,
+		Tag:   "issue",
+		Value: caDomain,
 	}
 	b.StaticRecords[b.Origin+"."] = append(
 		b.StaticRecords[b.Origin+"."],
+		rr,
+	)
+	// don't allow non-wildcard certs for subdomains
+	rr = &dns.CAA{
+		Hdr: dns.RR_Header{
+			Name:   "*." + b.Origin + ".",
+			Rrtype: dns.TypeCAA,
+			Class:  dns.ClassINET,
+			Ttl:    5 * 60, // 5 minutes
+		},
+		Flag:  128,
+		Tag:   "issue",
+		Value: ";",
+	}
+	b.StaticRecords["*."+b.Origin+"."] = append(
+		b.StaticRecords["*."+b.Origin+"."],
+		rr,
+	)
+	// set an issuewild record for the all subdomains
+	rr = &dns.CAA{
+		Hdr: dns.RR_Header{
+			Name:   "*." + b.Origin + ".",
+			Rrtype: dns.TypeCAA,
+			Class:  dns.ClassINET,
+			Ttl:    5 * 60, // 5 minutes
+		},
+		Flag:  128,
+		Tag:   "issuewild",
+		Value: caDomain,
+	}
+	b.StaticRecords["*."+b.Origin+"."] = append(
+		b.StaticRecords["*."+b.Origin+"."],
 		rr,
 	)
 }

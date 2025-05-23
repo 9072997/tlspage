@@ -36,22 +36,44 @@ func (h *HTTPHandler) ListenAndServe() error {
 	h.mux.HandleFunc("/key", h.keyHandler)
 	h.mux.HandleFunc("/cert/", h.certForHostnameHandler)
 
-	// listen and serve HTTPS
-	srv := &http.Server{
-		Addr: ":443",
-		TLSConfig: (&autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			Cache:      autocert.DirCache(h.CertCacheDir),
-			HostPolicy: autocert.HostWhitelist(h.DNSBackend.Origin),
-			Client:     h.ACME.client,
-		}).TLSConfig(),
-		Handler: h,
+	auto := &autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		Cache:      autocert.DirCache(h.CertCacheDir),
+		HostPolicy: autocert.HostWhitelist(h.DNSBackend.Origin),
+		Client:     h.ACME.client,
+	}
+
+	// listen and serve HTTP (mostly for ACME)
+	srvHTTP := &http.Server{
+		Addr:    ":80",
+		Handler: auto.HTTPHandler(h),
 
 		// safe defaults
 		ReadTimeout:    5 * time.Second,
-		WriteTimeout:   120 * time.Second,
+		WriteTimeout:   ACMETimeout, // we might be waiting for ACME
 		IdleTimeout:    5 * time.Second,
 		MaxHeaderBytes: 10 * 1024, // 10KB
 	}
-	return srv.ListenAndServeTLS("", "")
+
+	// listen and serve HTTPS
+	srvHTTPS := &http.Server{
+		Addr:      ":443",
+		TLSConfig: auto.TLSConfig(),
+		Handler:   h,
+
+		// safe defaults
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   ACMETimeout, // we might be waiting for ACME
+		IdleTimeout:    5 * time.Second,
+		MaxHeaderBytes: 10 * 1024, // 10KB
+	}
+
+	srvErr := make(chan error, 1)
+	go func() {
+		srvErr <- srvHTTP.ListenAndServe()
+	}()
+	go func() {
+		srvErr <- srvHTTPS.ListenAndServeTLS("", "")
+	}()
+	return <-srvErr
 }

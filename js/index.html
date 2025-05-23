@@ -82,6 +82,24 @@
 				`<span><strong>2001-db8-0--1</strong>.${h}</span><br />`;
 		}
 		
+		function Progress(seconds) {
+			const certE = document.getElementById('cert-value');
+			const interval = setInterval(() => {
+				if (!certE.innerText.startsWith('Loading...')) {
+					clearTimeout(interval);
+					return;
+				}
+				if (seconds <= 0) {
+					certE.innerText = 'Loading...';
+					return;
+				}
+				const m = Math.floor(seconds / 60);
+				const s = seconds % 60;
+				certE.innerText = `Loading... (ETA: ${m} minutes ${s} seconds)`;
+				seconds--;
+			}, 1000);
+		}
+		
 		function GoReady() {
 			// This function is called when the Go runtime is ready.
 			console.log('Go runtime is ready');
@@ -115,7 +133,8 @@
 				
 				if (!cert) {
 					cert = true;
-					certE.innerText = 'Loading... (ETA 20 seconds)';
+					certE.innerText = 'Loading...';
+					Progress(300);
 					try {
 						cert = await GetCertificate(csr, 'tls.page');
 					} catch (e) {

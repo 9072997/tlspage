@@ -13,6 +13,7 @@ func main() {
 	fmt.Printf("State Directory: %s\n", stateDir)
 	fmt.Printf("Configuration Directory: %s\n", confDir)
 	acmeAccountFile := filepath.Join(stateDir, "acme-account")
+	eabFile := filepath.Join(confDir, "eab")
 	zonefile := filepath.Join(confDir, "zonefile")
 	dnsKeyFile := filepath.Join(stateDir, "dns-key")
 	homePageCertDir := filepath.Join(stateDir, "certs")
@@ -33,18 +34,19 @@ func main() {
 
 	a, err := NewACME(
 		acmeAccountFile,
-		"https://acme-v02.api.letsencrypt.org/directory",
+		eabFile,
+		ACMEDirectoryURL,
 		db,
 	)
 	if err != nil {
 		panic(err)
 	}
 
-	zone, err := NewDNSBackend("tls.page", zonefile, db)
+	zone, err := NewDNSBackend(Origin, zonefile, db)
 	if err != nil {
 		panic(err)
 	}
-	zone.SetCAA("letsencrypt.org", a)
+	zone.SetCAA(CAAIdentifier, a)
 	zone.GoServeDNS(dnsKeyFile)
 
 	h := &HTTPHandler{
