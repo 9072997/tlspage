@@ -95,7 +95,7 @@ func (b DNSBackend) SetValidationRecord(qname, value string) error {
 			INSERT OR REPLACE INTO validation_records (qname, value)
 			VALUES (?, ?);
 			DELETE FROM validation_records
-			WHERE created < (strftime('%s', 'now') - 5 * 60);
+			WHERE created < (strftime('%s', 'now') - 10 * 60);
 		`,
 		qname,
 		value,
