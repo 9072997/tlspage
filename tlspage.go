@@ -94,7 +94,11 @@ func GetCertificate(csrPEM string, origin string) (certificatePEMs []string, err
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("server returned non-200 status: %s", resp.Status)
+		return nil, fmt.Errorf(
+			"server returned non-200 status: %s\n%s",
+			resp.Status,
+			respBody,
+		)
 	}
 
 	var certPEMs []string
