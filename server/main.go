@@ -15,7 +15,7 @@ func main() {
 	acmeAccountFile := filepath.Join(stateDir, "acme-account")
 	eabFile := filepath.Join(confDir, "eab")
 	zonefile := filepath.Join(confDir, "zonefile")
-	dnsKeyFile := filepath.Join(stateDir, "dns-key")
+	dnsKeyFile := filepath.Join(confDir, "dns-key")
 	homePageCertDir := filepath.Join(stateDir, "certs")
 	wwwDir := filepath.Join(confDir, "www")
 	dbDir := filepath.Join(stateDir, "db")
