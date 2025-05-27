@@ -133,9 +133,6 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 		app.WithCluster(peers),
 		app.WithTLS(app.SimpleTLSConfig(cert, pool)),
 		app.WithDiskMode(true),
-		app.WithRolesAdjustmentHook(
-			newRolesAdjustmentHook(a),
-		),
 	)
 	if err != nil {
 		return nil, err
@@ -246,6 +243,60 @@ func (c nodeStatusHandlers) dumpHandler(resp http.ResponseWriter, req *http.Requ
 	resp.Header().Set("Content-Type", "application/zip")
 }
 
+func (c nodeStatusHandlers) cleanupHandler(resp http.ResponseWriter, req *http.Request) {
+	nodes, err := c.Cluster(req.Context())
+	if err != nil {
+		http.Error(
+			resp,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// a healthy cluster should have at least 3 nodes
+	if len(nodes) <= 3 {
+		http.Error(
+			resp,
+			"not enough nodes to do cleanup",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// random delay to avoid all nodes doing
+	// the same thing at the same time
+	time.Sleep(time.Duration(mrand.Intn(1000)) * time.Millisecond)
+
+	// loop over each non-voting node and do a liveness check
+	for _, node := range nodes {
+		if node.Role == client.Voter {
+			fmt.Fprintf(resp, "Node %s is a voter, skipping\n", node.Address)
+			continue
+		}
+
+		conn, err := net.DialTimeout("tcp", node.Address, time.Second)
+		if err != nil {
+			fmt.Fprintf(resp, "Node %s is not reachable, removing\n", node.Address)
+			// remove the node from the cluster
+			ctx, cancel := context.WithTimeout(
+				context.Background(),
+				DqliteTimeout,
+			)
+			defer cancel()
+			err = c.Remove(ctx, node.ID)
+			if err != nil {
+				fmt.Fprintf(resp, "Error removing node %s: %v\n", node.Address, err)
+			} else {
+				fmt.Fprintf(resp, "Node %s removed\n", node.Address)
+			}
+			continue
+		}
+		conn.Close()
+	}
+	resp.Write([]byte("OK\n"))
+}
+
 func startStatusServer(a *app.App, addr string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), DqliteTimeout)
 	c, err := a.Client(ctx)
@@ -258,6 +309,7 @@ func startStatusServer(a *app.App, addr string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/nodes", handlers.listNodesHandler)
 	mux.HandleFunc("/dump", handlers.dumpHandler)
+	mux.HandleFunc("/cleanup", handlers.cleanupHandler)
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: mux,
