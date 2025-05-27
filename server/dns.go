@@ -150,6 +150,21 @@ func (b DNSBackend) Lookup(qname, streamIsolationID string) (rr []dns.RR, err er
 
 	// handle ipv4 and ipv6 records
 	if b.wildcardDNSName.MatchString(qname) {
+		// CAA to prevent anyone from getting a cert for the name directly
+		rr = []dns.RR{
+			&dns.CAA{
+				Hdr: dns.RR_Header{
+					Name:   qname,
+					Rrtype: dns.TypeCAA,
+					Class:  dns.ClassINET,
+					Ttl:    5 * 60, // 5 minutes
+				},
+				Flag:  128,
+				Tag:   "issue",
+				Value: ";",
+			},
+		}
+
 		ipPart, _, _ := strings.Cut(qname, ".")
 		// try as IPv4
 		parsed := net.ParseIP(strings.ReplaceAll(ipPart, "-", "."))
@@ -181,6 +196,10 @@ func (b DNSBackend) Lookup(qname, streamIsolationID string) (rr []dns.RR, err er
 			})
 			return
 		}
+
+		// if we reach here, the name is not a valid IP address
+		// NXDOMAIN response
+		return nil, nil
 	}
 
 	// handle static records
