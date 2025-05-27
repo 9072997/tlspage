@@ -29,78 +29,37 @@ import (
 const DBName = "tlspage.sqlite3"
 
 func myIPv6() (net.IP, error) {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-	for _, iface := range ifaces {
-		addrs, err := iface.Addrs()
+	for i := range 2 {
+		ifaces, err := net.Interfaces()
 		if err != nil {
-			continue
+			return nil, err
 		}
-		for _, addr := range addrs {
-			ipnet, ok := addr.(*net.IPNet)
-			if !ok {
+		for _, iface := range ifaces {
+			addrs, err := iface.Addrs()
+			if err != nil {
 				continue
 			}
-			if ipnet.IP.To4() != nil {
-				continue
+			for _, addr := range addrs {
+				ipnet, ok := addr.(*net.IPNet)
+				if !ok {
+					continue
+				}
+				if ipnet.IP.To4() != nil {
+					continue
+				}
+				if !ipnet.IP.IsGlobalUnicast() {
+					continue
+				}
+				return ipnet.IP, nil
 			}
-			if !ipnet.IP.IsGlobalUnicast() {
-				continue
-			}
-			return ipnet.IP, nil
+		}
+		if i == 0 {
+			// wait a bit before trying again
+			log.Println("No IPv6 address found, retrying in 5 seconds...")
+			time.Sleep(5 * time.Second)
 		}
 	}
 	return nil, nil
-}
-
-func newRolesAdjustmentHook(a *app.App) func(client.NodeInfo, []client.NodeInfo) error {
-	return func(leader client.NodeInfo, cluster []client.NodeInfo) error {
-		// a healthy cluster should have at least 3 nodes
-		if len(cluster) <= 3 {
-			return nil
-		}
-
-		// random delay to avoid all nodes doing
-		// the same thing at the same time
-		time.Sleep(time.Duration(mrand.Intn(1000)) * time.Millisecond)
-
-		// loop over each non-voting node and do a liveness check
-		for _, node := range cluster {
-			if node.ID == leader.ID {
-				continue
-			}
-			if node.Role == client.Voter {
-				continue
-			}
-
-			conn, err := net.DialTimeout("tcp", node.Address, time.Second)
-			if err != nil {
-				log.Printf("Node %d is dead: %v", node.ID, err)
-				// remove the node from the cluster
-				ctx, cancel := context.WithTimeout(
-					context.Background(),
-					DqliteTimeout,
-				)
-				defer cancel()
-				leader, err := a.FindLeader(ctx)
-				if err != nil {
-					log.Println("Error getting dqlite client:", err)
-					return err
-				}
-				defer leader.Close()
-				err = leader.Remove(ctx, node.ID)
-				if err != nil {
-					log.Printf("Error removing node %d: %v", node.ID, err)
-					return err
-				}
-				continue
-			}
-			conn.Close()
-		}
-		return nil
-	}
 }
 
 func readPeersFile(peersFile string) ([]string, error) {
