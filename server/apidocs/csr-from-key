@@ -1,0 +1,8 @@
+POST a PEM encoded ECDSA P-256 private key to get back a PEM encoded CSR
+that would be appropriate for use with other endpoints. This is a
+convenience function. The same calculation could be performed locally. This
+is not exactly secure in the sense that you are sending me your private key,
+and I don't really need it.
+
+While the private key is not stored on the server, the CSR generated from it
+will be stored for use with the /cert/ endpoint.
