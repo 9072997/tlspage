@@ -11,9 +11,11 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"database/sql"
+	"encoding/csv"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"io"
 	"log"
 	"math/big"
 	mrand "math/rand"
@@ -180,6 +182,7 @@ func NewDqlite(dataDir, certFile, keyFile, peersFile string) (*sql.DB, error) {
 
 type nodeStatusHandlers struct {
 	*client.Client
+	*sql.DB
 }
 
 func (c nodeStatusHandlers) listNodesHandler(resp http.ResponseWriter, req *http.Request) {
@@ -297,6 +300,87 @@ func (c nodeStatusHandlers) cleanupHandler(resp http.ResponseWriter, req *http.R
 	resp.Write([]byte("OK\n"))
 }
 
+func (c nodeStatusHandlers) sqlHandler(resp http.ResponseWriter, req *http.Request) {
+	ctx, cancel := context.WithTimeout(req.Context(), DqliteTimeout)
+	defer cancel()
+
+	// get the SQL query from the request
+	var query string
+	if req.Method == http.MethodPost {
+		// read the query from the request body
+		queryBytes, err := io.ReadAll(req.Body)
+		if err != nil {
+			http.Error(resp, "Failed to read request body", http.StatusBadRequest)
+			return
+		}
+		query = string(queryBytes)
+	} else if req.Method == http.MethodGet {
+		// get the query from the URL query parameters
+		query = req.URL.Query().Get("q")
+		if query == "" {
+			http.Error(resp, "Missing q parameter", http.StatusBadRequest)
+			return
+		}
+	} else {
+		http.Error(resp, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// execute the query
+	rows, err := c.DB.QueryContext(ctx, query)
+	if err != nil {
+		http.Error(resp, fmt.Sprintf("Failed to execute query: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	// write the results as CSV
+	resp.Header().Set("Content-Type", "text/csv")
+	csvWriter := csv.NewWriter(resp)
+	defer csvWriter.Flush()
+	columns, err := rows.Columns()
+	if err != nil {
+		http.Error(resp, fmt.Sprintf("Failed to get columns: %v", err), http.StatusInternalServerError)
+		return
+	}
+	err = csvWriter.Write(columns)
+	if err != nil {
+		http.Error(resp, fmt.Sprintf("Failed to write header: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	for rows.Next() {
+		values := make([]interface{}, len(columns))
+		valuePtrs := make([]interface{}, len(columns))
+		for i := range values {
+			valuePtrs[i] = &values[i]
+		}
+		err = rows.Scan(valuePtrs...)
+		if err != nil {
+			http.Error(resp, fmt.Sprintf("Failed to scan row: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		row := make([]string, len(columns))
+		for i, val := range values {
+			if val == nil {
+				row[i] = "NULL"
+			} else {
+				row[i] = fmt.Sprintf("%v", val)
+			}
+		}
+		err = csvWriter.Write(row)
+		if err != nil {
+			http.Error(resp, fmt.Sprintf("Failed to write row: %v", err), http.StatusInternalServerError)
+			return
+		}
+	}
+	if err = rows.Err(); err != nil {
+		http.Error(resp, fmt.Sprintf("Error iterating rows: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
 func startStatusServer(a *app.App, addr string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), DqliteTimeout)
 	c, err := a.Client(ctx)
@@ -304,12 +388,19 @@ func startStatusServer(a *app.App, addr string) error {
 	if err != nil {
 		return err
 	}
+	ctx, cancel = context.WithTimeout(context.Background(), DqliteTimeout)
+	db, err := a.Open(ctx, DBName)
+	cancel()
+	if err != nil {
+		return fmt.Errorf("failed to open dqlite database: %w", err)
+	}
 
-	handlers := nodeStatusHandlers{c}
+	handlers := nodeStatusHandlers{c, db}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/nodes", handlers.listNodesHandler)
 	mux.HandleFunc("/dump", handlers.dumpHandler)
 	mux.HandleFunc("/cleanup", handlers.cleanupHandler)
+	mux.HandleFunc("/sql", handlers.sqlHandler)
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: mux,
