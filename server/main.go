@@ -12,6 +12,7 @@ func main() {
 	confDir := os.Getenv("CONFIGURATION_DIRECTORY")
 	fmt.Printf("State Directory: %s\n", stateDir)
 	fmt.Printf("Configuration Directory: %s\n", confDir)
+	confFile := filepath.Join(confDir, "config.toml")
 	acmeAccountFile := filepath.Join(stateDir, "acme-account")
 	eabFile := filepath.Join(confDir, "eab")
 	zonefile := filepath.Join(confDir, "zonefile")
@@ -21,6 +22,11 @@ func main() {
 	dqliteCertFile := filepath.Join(confDir, "dqlite.cert")
 	dqliteKeyFile := filepath.Join(confDir, "dqlite.key")
 	peersFile := filepath.Join(confDir, "peers")
+
+	err := LoadOrInitConfig(confFile)
+	if err != nil {
+		panic(fmt.Errorf("failed to load config: %v", err))
+	}
 
 	db, err := NewDqlite(dbDir, dqliteCertFile, dqliteKeyFile, peersFile)
 	if err != nil {

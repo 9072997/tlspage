@@ -3,6 +3,7 @@ module github.com/9072997/tlspage
 go 1.24.3
 
 require (
+	github.com/BurntSushi/toml v1.5.0
 	github.com/canonical/go-dqlite/v3 v3.0.0
 	github.com/gregdel/pushover v1.3.1
 	github.com/hlandau/buildinfo v0.0.0-20161112115716-337a29b54997
