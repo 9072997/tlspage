@@ -8,11 +8,11 @@ import (
 )
 
 type HTTPHandler struct {
-	FSHandler    http.Handler
-	ACME         ACME
-	DNSBackend   DNSBackend
-	CertCacheDir string
-	mux          *http.ServeMux
+	FSHandler  http.Handler
+	ACME       ACME
+	DNSBackend DNSBackend
+	CertCache  *AutoCertCache
+	mux        *http.ServeMux
 }
 
 func (h *HTTPHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
@@ -38,7 +38,7 @@ func (h *HTTPHandler) ListenAndServe() error {
 
 	auto := &autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		Cache:      autocert.DirCache(h.CertCacheDir),
+		Cache:      h.CertCache,
 		HostPolicy: autocert.HostWhitelist(h.DNSBackend.Origin),
 		Client:     h.ACME.client,
 	}

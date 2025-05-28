@@ -16,7 +16,6 @@ func main() {
 	eabFile := filepath.Join(confDir, "eab")
 	zonefile := filepath.Join(confDir, "zonefile")
 	dnsKeyFile := filepath.Join(confDir, "dns-key")
-	homePageCertDir := filepath.Join(stateDir, "certs")
 	wwwDir := filepath.Join(confDir, "www")
 	dbDir := filepath.Join(stateDir, "db")
 	dqliteCertFile := filepath.Join(confDir, "dqlite.cert")
@@ -49,11 +48,16 @@ func main() {
 	zone.SetCAA(CAAIdentifier, a)
 	zone.GoServeDNS(dnsKeyFile)
 
+	acc, err := NewAutoCertCache(db)
+	if err != nil {
+		panic(fmt.Errorf("failed to create autocert cache: %v", err))
+	}
+
 	h := &HTTPHandler{
-		ACME:         a,
-		DNSBackend:   zone,
-		FSHandler:    http.FileServer(http.Dir(wwwDir)),
-		CertCacheDir: homePageCertDir,
+		ACME:       a,
+		DNSBackend: zone,
+		FSHandler:  http.FileServer(http.Dir(wwwDir)),
+		CertCache:  acc,
 	}
 	err = h.ListenAndServe()
 	panic(err)
