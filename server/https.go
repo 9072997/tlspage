@@ -35,6 +35,7 @@ func (h *HTTPHandler) ListenAndServe() error {
 	h.mux.HandleFunc("/csr-from-key", h.csrFromKeyHandler)
 	h.mux.HandleFunc("/key", h.keyHandler)
 	h.mux.HandleFunc("/cert/", h.certForHostnameHandler)
+	h.mux.HandleFunc("/status", h.statusHandler)
 
 	auto := &autocert.Manager{
 		Prompt:     autocert.AcceptTOS,

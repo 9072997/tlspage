@@ -7,6 +7,8 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"math/rand"
+	"net"
 	"net/http"
 	"strings"
 
@@ -326,4 +328,57 @@ func (h *HTTPHandler) certForHostnameHandler(resp http.ResponseWriter, req *http
 	resp.Header().Set("Content-Type", "application/x-x509-ca-cert")
 	resp.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.pem\"", hostname))
 	resp.Write(cert)
+}
+
+// the idea is that this should perform a number of health checks that are
+// cheap enough to safely expose to the internet.
+func (h *HTTPHandler) statusHandler(resp http.ResponseWriter, req *http.Request) {
+	// create a random TXT record and check propagation
+	qname := fmt.Sprintf(
+		"_acme-challenge.healthcheck-%d.%s.",
+		rand.Int63(),
+		h.DNSBackend.Origin,
+	)
+	value := fmt.Sprint(rand.Int63())
+	err := h.DNSBackend.SetValidationRecord(qname, value)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to set validation record: %v", err)
+		http.Error(resp, errMsg, http.StatusInternalServerError)
+		return
+	}
+	valueFromDB, err := h.DNSBackend.GetValidationRecord(qname)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to get validation record from DB: %v", err)
+		http.Error(resp, errMsg, http.StatusInternalServerError)
+		return
+	}
+	if string(valueFromDB) != value {
+		errMsg := fmt.Sprintf("Validation record value mismatch in DB: expected %s, got %s", value, valueFromDB)
+		http.Error(resp, errMsg, http.StatusInternalServerError)
+		return
+	}
+	valuesFromDNS, err := net.LookupTXT(qname)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to lookup TXT record from DNS: %v", err)
+		http.Error(resp, errMsg, http.StatusInternalServerError)
+		return
+	}
+	if len(valuesFromDNS) == 0 {
+		errMsg := fmt.Sprintf("No TXT records found for %s", qname)
+		http.Error(resp, errMsg, http.StatusInternalServerError)
+		return
+	}
+	if len(valuesFromDNS) > 1 {
+		errMsg := fmt.Sprintf("Multiple TXT records found for %s: %v", qname, valuesFromDNS)
+		http.Error(resp, errMsg, http.StatusInternalServerError)
+		return
+	}
+	if valuesFromDNS[0] != value {
+		errMsg := fmt.Sprintf("TXT record value mismatch in DNS: expected %s, got %s", value, valuesFromDNS[0])
+		http.Error(resp, errMsg, http.StatusInternalServerError)
+		return
+	}
+
+	resp.Header().Set("Content-Type", "text/plain")
+	resp.Write([]byte("OK\n"))
 }
