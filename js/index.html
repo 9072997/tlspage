@@ -114,7 +114,7 @@
 			
 			// generate the CSR
 			const pk = GenerateKey();
-			const h = Hostname(pk, 'tls.page');
+			const h = Hostname(pk, window.location.hostname);
 			const csr = GenerateCSR(pk, h);
 			let cert = '';
 			privateKeyE.innerText = pk;
@@ -136,7 +136,7 @@
 					certE.innerText = 'Loading...';
 					Progress(300);
 					try {
-						cert = await GetCertificate(csr, 'tls.page');
+						cert = await GetCertificate(csr, window.location.hostname);
 					} catch (e) {
 						certE.innerText = 'Error: ' + e;
 						return;
@@ -155,7 +155,7 @@
 						URL.revokeObjectURL(url);
 					};
 					certLink.innerText = 'This link always points to a valid certificate for this private key';
-					certLink.href = `https://tls.page/cert/${h}`;
+					certLink.href = `/cert/${h}`;
 				}
 			};
 		}
