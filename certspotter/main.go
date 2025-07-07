@@ -76,6 +76,10 @@ func main() {
 
 func notify(format string, args ...interface{}) {
 	s := fmt.Sprintf(format, args...)
+	if len(s) > 1024 {
+		log.Printf("Message truncated: %s", s)
+		s = s[:1024]
+	}
 
 	// send message via Pushover
 	apiKey := os.Getenv("PUSHOVER_API_KEY")

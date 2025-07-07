@@ -20,6 +20,15 @@ func HandleOther() {
 		}
 	}
 
+	// trim message and summary to 1024/250 characters
+	if len(text) > 1024 {
+		log.Printf("Message truncated: %s", text)
+		text = text[:1024]
+	}
+	if len(summary) > 250 {
+		summary = summary[:250]
+	}
+
 	// send message via Pushover
 	apiKey := os.Getenv("PUSHOVER_API_KEY")
 	if apiKey == "" {
