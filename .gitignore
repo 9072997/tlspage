@@ -1,0 +1,7 @@
+client/builds/**
+js/tlspagelib.wasm
+js/wasm_exec.js
+certspotter/certspotter
+certspotter/certspotter.exe
+server/server
+server/server.exe
